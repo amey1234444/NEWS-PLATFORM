@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb5e4a5a-a8ba-49e0-bbd3-646ce289a2dc" name="Changes" comment="created pipeline yml just for checking purpose">
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/example/MainApplicationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    <list default="true" id="bb5e4a5a-a8ba-49e0-bbd3-646ce289a2dc" name="Changes" comment="updated test file name">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/example/MainApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/example/MainApplicationTests.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +74,23 @@
       <option name="project" value="LOCAL" />
       <updated>1773519641258</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="updated pipeline with test of main file case">
+      <option name="closed" value="true" />
+      <created>1773520085563</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1773520085563</updated>
+    </task>
+    <task id="LOCAL-00004" summary="updated test file name">
+      <option name="closed" value="true" />
+      <created>1773520189070</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1773520189070</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -123,6 +139,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="new one" />
     <MESSAGE value="created pipeline yml just for checking purpose" />
-    <option name="LAST_COMMIT_MESSAGE" value="created pipeline yml just for checking purpose" />
+    <MESSAGE value="updated pipeline with test of main file case" />
+    <MESSAGE value="updated test file name" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated test file name" />
   </component>
 </project>

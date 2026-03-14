@@ -1,16 +1,20 @@
 package org.example;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @SpringBootTest
 class MainApplicationTests {
 
+    @MockBean
+    private ChatClient chatClient;
+
     /**
      * Test to verify that the Spring Boot application context loads successfully.
-     * If the context fails to start, this test will fail automatically.
      */
     @Test
     void contextLoads() {

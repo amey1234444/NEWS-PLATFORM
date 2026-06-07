@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  ai-refiner:
+    build: ../ai-refiner-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - LLM_API_KEY=${LLM_API_KEY}
+      - NOTIFICATION_URL=http://notification:8083
+    depends_on:
+      - notification
+
+  news-fetcher:
+    build: ../news-fetcher-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      - ai-refiner
+
+  notification:
+    build: ../notification-service
+    ports:
+      - "8083:8083"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+  # Optional one-shot runner to execute the feed-poster script against the ai-refiner service.
+  # This is intended for manual runs via `docker compose run --rm news-poster` or for testing.
+  news-poster:
+    image: mcr.microsoft.com/powershell:7.2-ubuntu-20.04
+    volumes:
+      - ../:/work:ro
+    working_dir: /work
+    entrypoint: ["pwsh", "-NoProfile", "-Command"]
+    command: ["./scripts/send-todays-news.ps1 -AiRefinerUrl 'http://ai-refiner:8082/api/refine/test' -Limit 10 -SinceDays 0"]
+    depends_on:
+      - ai-refiner
+      - notification
+    restart: 'no'

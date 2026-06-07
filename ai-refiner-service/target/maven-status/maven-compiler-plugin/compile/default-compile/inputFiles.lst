@@ -1,0 +1,8 @@
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\AiRefinerApplication.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\client\LlmClient.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\consumer\RefinerConsumer.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\controller\RefinerTestController.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\dto\NewsRaw.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\entity\RefinedNews.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\producer\RefinedProducer.java
+F:\Downloads2\news-platform\ai-refiner-service\src\main\java\com\example\airefiner\repository\RefinedNewsRepository.java

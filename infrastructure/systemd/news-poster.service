@@ -1,0 +1,15 @@
+[Unit]
+Description=Run send-todays-news script via Docker
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/news-poster
+WorkingDirectory=/opt/news-platform
+ExecStart=/usr/bin/docker run --rm -v /opt/news-platform:/work -w /work mcr.microsoft.com/powershell:7.2 pwsh -NoProfile -File ./scripts/send-todays-news.ps1 -AiRefinerUrl "$AI_REFINER_URL" -Limit "$LIMIT" -SinceDays "$SINCE_DAYS"
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

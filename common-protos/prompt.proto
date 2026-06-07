@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package common;
+
+service PromptService {
+  rpc RefineNews (NewsRequest) returns (NewsResponse) {}
+}
+
+message NewsRequest {
+  string title = 1;
+  string content = 2;
+}
+
+message NewsResponse {
+  string refinedTitle = 1;
+  string summary = 2;
+  repeated string tags = 3;
+}

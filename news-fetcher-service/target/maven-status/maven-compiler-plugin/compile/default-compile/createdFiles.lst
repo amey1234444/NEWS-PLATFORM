@@ -1,0 +1,14 @@
+com\example\newsfetcher\repository\FeedRepository.class
+com\example\newsfetcher\config\RedissonConfig.class
+com\example\newsfetcher\controller\FeedAdminController.class
+com\example\newsfetcher\NewsFetcherApplication.class
+com\example\newsfetcher\producer\NewsProducer.class
+com\example\newsfetcher\config\FeedBootstrap.class
+com\example\newsfetcher\lock\RedisLockService.class
+com\example\newsfetcher\scheduler\FeedScheduler.class
+com\example\newsfetcher\controller\FetchController.class
+com\example\newsfetcher\entity\News.class
+com\example\newsfetcher\controller\FeedUIController.class
+com\example\newsfetcher\repository\NewsRepository.class
+com\example\newsfetcher\entity\Feed.class
+com\example\newsfetcher\service\FeedService.class

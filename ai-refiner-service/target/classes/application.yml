@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/newsdb
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+server:
+  port: 8082
+
+# TEMPORARY: OpenRouter LLM settings (inserted per user request). Remove later.
+llm:
+  api:
+    url: https://openrouter.ai/api/v1/chat/completions
+    key: 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
+  model: google/gemini-2.5-flash

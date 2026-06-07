@@ -1,0 +1,38 @@
+name: Daily News Fetch & Notify
+
+on:
+  workflow_dispatch:
+    inputs:
+      aiRefinerUrl:
+        description: 'Ai refiner endpoint (overrides secret)'
+        required: false
+      limit:
+        description: 'Number of items to fetch'
+        required: false
+        default: '10'
+      sinceDays:
+        description: 'How many days back to fetch'
+        required: false
+        default: '0'
+  schedule:
+    - cron: '30 3 * * *' # Runs daily at 09:00 IST (03:30 UTC). GitHub Actions uses UTC for cron.
+
+jobs:
+  run-script:
+    name: Run send-todays-news.ps1
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run send-todays-news script
+        shell: pwsh
+        env:
+          AI_REFINER_URL: ${{ github.event.inputs.aiRefinerUrl || secrets.AI_REFINER_URL || 'http://localhost:8082/api/refine/test' }}
+          LIMIT: ${{ github.event.inputs.limit || '10' }}
+          SINCE_DAYS: ${{ github.event.inputs.sinceDays || '0' }}
+        run: |
+          Write-Host "Using AiRefinerUrl: $env:AI_REFINER_URL"
+          Write-Host "Limit: $env:LIMIT, SinceDays: $env:SINCE_DAYS"
+          .\scripts\send-todays-news.ps1 -AiRefinerUrl "$env:AI_REFINER_URL" -Limit $env:LIMIT -SinceDays $env:SINCE_DAYS

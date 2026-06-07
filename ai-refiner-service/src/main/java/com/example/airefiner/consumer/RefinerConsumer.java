@@ -5,6 +5,7 @@ import com.example.airefiner.dto.NewsRaw;
 import com.example.airefiner.entity.RefinedNews;
 import com.example.airefiner.producer.RefinedProducer;
 import com.example.airefiner.repository.RefinedNewsRepository;
+import com.example.airefiner.service.RefinedResponseProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,26 +20,31 @@ public class RefinerConsumer {
     private final LlmClient llmClient;
     private final RefinedNewsRepository refinedNewsRepository;
     private final RefinedProducer producer;
+    private final RefinedResponseProcessor processor;
 
-    public RefinerConsumer(LlmClient llmClient, RefinedNewsRepository refinedNewsRepository, RefinedProducer producer) {
+    public RefinerConsumer(LlmClient llmClient,
+                           RefinedNewsRepository refinedNewsRepository,
+                           RefinedProducer producer,
+                           RefinedResponseProcessor processor) {
         this.llmClient = llmClient;
         this.refinedNewsRepository = refinedNewsRepository;
         this.producer = producer;
+        this.processor = processor;
     }
 
     @KafkaListener(topics = "news.raw", groupId = "ai-refiner")
     public void consume(Object raw) {
         try {
-            // convert to NewsRaw via ObjectMapper (handles Map or POJO)
             NewsRaw news = mapper.convertValue(raw, NewsRaw.class);
             log.info("Refining news id={} source={}", news.getId(), news.getSource());
 
-            LlmClient.LlmResult res = llmClient.refine(news);
+            LlmClient.LlmResult rawResult = llmClient.refine(news);
+            LlmClient.LlmResult cleaned = processor.process(rawResult, news);
 
             RefinedNews rn = new RefinedNews();
-            rn.setTitle(res.getTitle());
-            rn.setSummary(res.getSummary());
-            rn.setTags(res.getTags());
+            rn.setTitle(cleaned.getTitle());
+            rn.setSummary(cleaned.getSummary());
+            rn.setTags(cleaned.getTags());
 
             RefinedNews saved = refinedNewsRepository.save(rn);
             producer.publish(saved);

@@ -64,6 +64,11 @@ jobs:
         run: |
           docker compose -f infrastructure/docker-compose.news.yml up -d --build
 
+      - name: Check notification env presence (safe)
+        run: |
+          echo "Verifying notification container env presence (no secrets will be printed)"
+          docker compose -f infrastructure/docker-compose.news.yml run --rm --entrypoint sh notification -c 'if [ -z "${TELEGRAM_BOT_TOKEN}" ]; then echo "TELEGRAM_BOT_TOKEN=missing"; else echo "TELEGRAM_BOT_TOKEN=set"; fi; if [ -z "${TELEGRAM_CHAT_ID}" ]; then echo "TELEGRAM_CHAT_ID=missing"; else echo "TELEGRAM_CHAT_ID=set"; fi'
+
       - name: Wait for ai-refiner to accept connections
         run: |
           echo "Waiting for http://localhost:8082 to become available..."

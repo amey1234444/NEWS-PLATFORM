@@ -64,6 +64,11 @@ jobs:
         run: |
           docker compose -f infrastructure/docker-compose.news.yml up -d --build
 
+      - name: Show compose services
+        run: |
+          echo "Compose services status:" 
+          docker compose -f infrastructure/docker-compose.news.yml ps || true
+
       - name: Check notification env presence (safe)
         run: |
           echo "Verifying notification container env presence (no secrets will be printed)"
@@ -83,6 +88,11 @@ jobs:
       - name: Run news poster (inside compose)
         run: |
           docker compose -f infrastructure/docker-compose.news.yml run --rm news-poster
+
+      - name: Show ai-refiner logs
+        run: |
+          echo "ai-refiner logs (last 200 lines):"
+          docker compose -f infrastructure/docker-compose.news.yml logs --no-color ai-refiner --tail=200 || true
 
       - name: Show notification logs
         run: |

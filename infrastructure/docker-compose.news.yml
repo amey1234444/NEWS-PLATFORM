@@ -7,6 +7,7 @@ services:
       - "8082:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:newsdb;DB_CLOSE_DELAY=-1
       - LLM_API_KEY=${LLM_API_KEY}
       - NOTIFICATION_URL=http://notification:8083
     depends_on:
@@ -18,6 +19,7 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:newsdb;DB_CLOSE_DELAY=-1
     depends_on:
       - ai-refiner
 
@@ -27,6 +29,7 @@ services:
       - "8083:8083"
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:newsdb;DB_CLOSE_DELAY=-1
 
   # Optional one-shot runner to execute the feed-poster script against the ai-refiner service.
   # This is intended for manual runs via `docker compose run --rm news-poster` or for testing.

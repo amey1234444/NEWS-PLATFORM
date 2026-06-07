@@ -6,15 +6,31 @@ Options provided in this repository:
 - A workflow `.github/workflows/daily-news.yml` runs `scripts/send-todays-news.ps1` on `windows-latest`.
 - It's configured to run daily at 09:00 IST (see cron in the workflow).
 - You can also trigger it manually from the Actions UI or via `workflow_dispatch` inputs.
-
 Quick setup:
-- Add a repository secret `AI_REFINER_URL` (or set `AI_REFINER_URL` when dispatching manually):
+- The workflow now runs a self-contained Docker Compose job by default (mode=`compose`) for scheduled runs.
+- Required repository secrets for the default compose run:
+  - `TELEGRAM_BOT_TOKEN` — Telegram bot token used by the `notification` service.
+  - `LLM_API_KEY` — optional, used by `ai-refiner` if configured.
 
-  gh secret set AI_REFINER_URL --body 'http://<your-host>:8082/api/refine/test'
+Set the secrets with the GitHub CLI:
 
-- To trigger manually:
+```bash
+gh secret set TELEGRAM_BOT_TOKEN --body '<your-telegram-bot-token>'
+gh secret set LLM_API_KEY --body '<your-llm-api-key>'
+```
 
-  gh workflow run daily-news.yml --ref main --field aiRefinerUrl='http://<your-host>:8082/api/refine/test'
+Manual runs:
+- Default (compose) manual run — runs the self-contained compose job (recommended):
+
+```bash
+gh workflow run daily-news.yml --ref main
+```
+
+- Direct/manual run (target an external ai-refiner URL):
+
+```bash
+gh workflow run daily-news.yml --ref main --field mode=direct --field aiRefinerUrl='https://your-host:8082/api/refine/test' --field limit=10 --field sinceDays=0
+```
 
 
 2) VPS deployment with Docker Compose + systemd timer (runs script on host daily at 09:00 IST)

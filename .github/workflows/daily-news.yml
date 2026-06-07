@@ -6,6 +6,10 @@ on:
       aiRefinerUrl:
         description: 'Ai refiner endpoint (overrides secret)'
         required: false
+      mode:
+        description: 'Run mode: compose (default) or direct (direct targets external ai-refiner)'
+        required: false
+        default: 'compose'
       limit:
         description: 'Number of items to fetch'
         required: false
@@ -16,17 +20,84 @@ on:
         default: '0'
   schedule:
     - cron: '30 3 * * *' # Runs daily at 09:00 IST (03:30 UTC). GitHub Actions uses UTC for cron.
+  push:
+    branches:
+      - main
 
 jobs:
-  run-script:
-    name: Run send-todays-news.ps1
-    runs-on: windows-latest
+  compose-run:
+    name: Compose-based end-to-end run
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    # Run this job for scheduled runs, pushes to main, or when user selects mode=compose (default)
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'compose') }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run send-todays-news script
+      - name: Ensure Docker is available
+        run: |
+          docker version
+          docker compose version || true
+
+      - name: Create compose env file (secrets are masked)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          mkdir -p infrastructure
+          echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}" > infrastructure/.env
+          echo "LLM_API_KEY=${LLM_API_KEY}" >> infrastructure/.env
+          chmod 600 infrastructure/.env || true
+
+      - name: Verify required secrets
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          if [ -z "${TELEGRAM_BOT_TOKEN}" ]; then
+            echo "Missing required secret: TELEGRAM_BOT_TOKEN. Please add it to repository secrets and re-run."
+            exit 1
+          fi
+
+      - name: Build and start services with Docker Compose
+        run: |
+          docker compose -f infrastructure/docker-compose.news.yml up -d --build
+
+      - name: Wait for ai-refiner to accept connections
+        run: |
+          echo "Waiting for http://localhost:8082 to become available..."
+          for i in $(seq 1 60); do
+            if curl -sS -I http://localhost:8082 >/dev/null 2>&1; then
+              echo "ai-refiner is responding"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run news poster (inside compose)
+        run: |
+          docker compose -f infrastructure/docker-compose.news.yml run --rm news-poster
+
+      - name: Show notification logs
+        run: |
+          docker compose -f infrastructure/docker-compose.news.yml logs --no-color notification --tail=200 || true
+
+      - name: Tear down compose
+        if: always()
+        run: |
+          docker compose -f infrastructure/docker-compose.news.yml down --volumes --remove-orphans || true
+
+  run-script-direct:
+    name: Direct runner (use when ai-refiner is externally reachable)
+    runs-on: windows-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'direct' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run send-todays-news script (direct)
         shell: pwsh
         env:
           AI_REFINER_URL_INPUT: ${{ github.event.inputs.aiRefinerUrl }}
@@ -34,7 +105,6 @@ jobs:
           LIMIT_INPUT: ${{ github.event.inputs.limit }}
           SINCE_DAYS_INPUT: ${{ github.event.inputs.sinceDays }}
         run: |
-          # Resolve inputs -> secret -> default in PowerShell to avoid complex GH expression syntax
           $ai = if ($env:AI_REFINER_URL_INPUT -and $env:AI_REFINER_URL_INPUT -ne '') { $env:AI_REFINER_URL_INPUT } elseif ($env:AI_REFINER_URL_SECRET -and $env:AI_REFINER_URL_SECRET -ne '') { $env:AI_REFINER_URL_SECRET } else { 'http://localhost:8082/api/refine/test' }
           $limit = if ($env:LIMIT_INPUT -and $env:LIMIT_INPUT -ne '') { $env:LIMIT_INPUT } else { '10' }
           $since = if ($env:SINCE_DAYS_INPUT -and $env:SINCE_DAYS_INPUT -ne '') { $env:SINCE_DAYS_INPUT } else { '0' }

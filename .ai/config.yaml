@@ -1,0 +1,15 @@
+# Configuration for work-issue-agent when this repo is the target.
+# Java 21 / Spring Boot multi-module Maven monorepo.
+
+# Files treated as the source-of-truth instructions, in priority order.
+instruction_files:
+  - AGENTS.md
+  - README.md
+  - DEPLOYMENT.md
+
+# Glob (relative to repo root) for additional rule files injected into context.
+rules_glob: .ai/rules/*.md
+
+# Default command used to verify changes when the LLM doesn't specify one.
+# The issue (#2) concerns the ai-refiner-service module, so tests are run there.
+test_command: mvn -q -f ai-refiner-service/pom.xml test

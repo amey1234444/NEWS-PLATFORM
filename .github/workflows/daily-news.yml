@@ -29,10 +29,15 @@ jobs:
       - name: Run send-todays-news script
         shell: pwsh
         env:
-          AI_REFINER_URL: ${{ github.event.inputs.aiRefinerUrl || secrets.AI_REFINER_URL || 'http://localhost:8082/api/refine/test' }}
-          LIMIT: ${{ github.event.inputs.limit || '10' }}
-          SINCE_DAYS: ${{ github.event.inputs.sinceDays || '0' }}
+          AI_REFINER_URL_INPUT: ${{ github.event.inputs.aiRefinerUrl }}
+          AI_REFINER_URL_SECRET: ${{ secrets.AI_REFINER_URL }}
+          LIMIT_INPUT: ${{ github.event.inputs.limit }}
+          SINCE_DAYS_INPUT: ${{ github.event.inputs.sinceDays }}
         run: |
-          Write-Host "Using AiRefinerUrl: $env:AI_REFINER_URL"
-          Write-Host "Limit: $env:LIMIT, SinceDays: $env:SINCE_DAYS"
-          .\scripts\send-todays-news.ps1 -AiRefinerUrl "$env:AI_REFINER_URL" -Limit $env:LIMIT -SinceDays $env:SINCE_DAYS
+          # Resolve inputs -> secret -> default in PowerShell to avoid complex GH expression syntax
+          $ai = if ($env:AI_REFINER_URL_INPUT -and $env:AI_REFINER_URL_INPUT -ne '') { $env:AI_REFINER_URL_INPUT } elseif ($env:AI_REFINER_URL_SECRET -and $env:AI_REFINER_URL_SECRET -ne '') { $env:AI_REFINER_URL_SECRET } else { 'http://localhost:8082/api/refine/test' }
+          $limit = if ($env:LIMIT_INPUT -and $env:LIMIT_INPUT -ne '') { $env:LIMIT_INPUT } else { '10' }
+          $since = if ($env:SINCE_DAYS_INPUT -and $env:SINCE_DAYS_INPUT -ne '') { $env:SINCE_DAYS_INPUT } else { '0' }
+          Write-Host "Using AiRefinerUrl: $ai"
+          Write-Host "Limit: $limit, SinceDays: $since"
+          .\scripts\send-todays-news.ps1 -AiRefinerUrl $ai -Limit $limit -SinceDays $since

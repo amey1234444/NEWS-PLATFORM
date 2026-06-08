@@ -13,7 +13,11 @@ Goal: take a GitHub issue and produce a focused, tested pull request that resolv
    contents for every edited or created file (full files, not snippets).
 6. Add JUnit 5 unit tests under the module's `src/test/java/...` that prove the
    behaviour. Prefer pure unit tests with no Spring context, Kafka or database.
-7. The change is verified with the configured Maven test command.
+   Follow `.ai/rules/testing.md` exactly, including the two required `pom.xml`
+   additions (test dependency + Surefire 3.2.5) and nothing else.
+7. The change MUST be verified with EXACTLY this command (return it verbatim as
+   the test command; do not invent another, and never use `-pl`):
+   `mvn -q -f ai-refiner-service/pom.xml test`
 8. Write a clear PR title and body that explains what changed and why, and
    references the issue (e.g. "Closes #2").
 

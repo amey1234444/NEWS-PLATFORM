@@ -7,3 +7,10 @@
 - Keep new logic in small, testable units (plain classes/methods) rather than
   burying it inside Kafka listeners or controllers.
 - Never edit generated output under `target/`.
+
+## Java regex / string-literal escaping (important)
+
+- In Java string literals, every regex backslash must be DOUBLED. Use `"\\s+"`,
+  `"\\n{2,}"`, `"\\[(.*?)\\]\\(.*?\\)"` — never `"\s+"` or `"\n{2,}"` (those are
+  illegal escape characters and will not compile).
+- Call `Pattern.compile(...)` exactly once — never `Pattern.Pattern.compile(...)`.

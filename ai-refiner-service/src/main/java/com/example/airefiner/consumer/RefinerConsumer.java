@@ -5,6 +5,7 @@ import com.example.airefiner.dto.NewsRaw;
 import com.example.airefiner.entity.RefinedNews;
 import com.example.airefiner.producer.RefinedProducer;
 import com.example.airefiner.repository.RefinedNewsRepository;
+import com.example.airefiner.service.RefinerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +20,16 @@ public class RefinerConsumer {
     private final LlmClient llmClient;
     private final RefinedNewsRepository refinedNewsRepository;
     private final RefinedProducer producer;
+    private final RefinerService refinerService;
 
-    public RefinerConsumer(LlmClient llmClient, RefinedNewsRepository refinedNewsRepository, RefinedProducer producer) {
+    public RefinerConsumer(LlmClient llmClient, 
+                          RefinedNewsRepository refinedNewsRepository, 
+                          RefinedProducer producer,
+                          RefinerService refinerService) {
         this.llmClient = llmClient;
         this.refinedNewsRepository = refinedNewsRepository;
         this.producer = producer;
+        this.refinerService = refinerService;
     }
 
     @KafkaListener(topics = "news.raw", groupId = "ai-refiner")
@@ -34,12 +40,9 @@ public class RefinerConsumer {
             log.info("Refining news id={} source={}", news.getId(), news.getSource());
 
             LlmClient.LlmResult res = llmClient.refine(news);
-
-            RefinedNews rn = new RefinedNews();
-            rn.setTitle(res.getTitle());
-            rn.setSummary(res.getSummary());
-            rn.setTags(res.getTags());
-
+            
+            // Use the refinement layer to clean and standardize the response
+            RefinedNews rn = refinerService.refine(res, news.getId());
             RefinedNews saved = refinedNewsRepository.save(rn);
             producer.publish(saved);
             log.info("Published refined news id={}", saved.getId());

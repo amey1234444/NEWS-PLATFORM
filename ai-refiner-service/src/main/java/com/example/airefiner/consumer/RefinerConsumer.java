@@ -4,6 +4,7 @@ import com.example.airefiner.client.LlmClient;
 import com.example.airefiner.dto.NewsRaw;
 import com.example.airefiner.entity.RefinedNews;
 import com.example.airefiner.producer.RefinedProducer;
+import com.example.airefiner.processor.RefinedContentProcessor;
 import com.example.airefiner.repository.RefinedNewsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -19,11 +20,13 @@ public class RefinerConsumer {
     private final LlmClient llmClient;
     private final RefinedNewsRepository refinedNewsRepository;
     private final RefinedProducer producer;
+    private final RefinedContentProcessor processor;
 
-    public RefinerConsumer(LlmClient llmClient, RefinedNewsRepository refinedNewsRepository, RefinedProducer producer) {
+    public RefinerConsumer(LlmClient llmClient, RefinedNewsRepository refinedNewsRepository, RefinedProducer producer, RefinedContentProcessor processor) {
         this.llmClient = llmClient;
         this.refinedNewsRepository = refinedNewsRepository;
         this.producer = producer;
+        this.processor = processor;
     }
 
     @KafkaListener(topics = "news.raw", groupId = "ai-refiner")
@@ -37,7 +40,8 @@ public class RefinerConsumer {
 
             RefinedNews rn = new RefinedNews();
             rn.setTitle(res.getTitle());
-            rn.setSummary(res.getSummary());
+            // Clean the summary using the new processor
+            rn.setSummary(processor.process(res.getSummary()));
             rn.setTags(res.getTags());
 
             RefinedNews saved = refinedNewsRepository.save(rn);

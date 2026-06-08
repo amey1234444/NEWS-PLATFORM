@@ -5,6 +5,7 @@ import com.example.airefiner.dto.NewsRaw;
 import com.example.airefiner.entity.RefinedNews;
 import com.example.airefiner.producer.RefinedProducer;
 import com.example.airefiner.repository.RefinedNewsRepository;
+import com.example.airefiner.service.RefinerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,16 +27,19 @@ public class RefinerTestController {
     private final LlmClient llmClient;
     private final RefinedNewsRepository repo;
     private final RefinedProducer producer;
+    private final RefinerService refinerService;
     private final WebClient webClient;
     private final String notificationBase;
 
     public RefinerTestController(LlmClient llmClient,
                                  RefinedNewsRepository repo,
                                  RefinedProducer producer,
+                                 RefinerService refinerService,
                                  @Value("${notification.url:http://localhost:8083}") String notificationBase) {
         this.llmClient = llmClient;
         this.repo = repo;
         this.producer = producer;
+        this.refinerService = refinerService;
         this.notificationBase = notificationBase;
         this.webClient = WebClient.create(notificationBase);
     }
@@ -44,10 +48,9 @@ public class RefinerTestController {
     public Mono<ResponseEntity<Map<String,Object>>> refineTest(@RequestBody NewsRaw raw) {
         return Mono.fromCallable(() -> {
             com.example.airefiner.client.LlmClient.LlmResult res = llmClient.refine(raw);
-            RefinedNews rn = new RefinedNews();
-            rn.setTitle(res.getTitle());
-            rn.setSummary(res.getSummary());
-            rn.setTags(res.getTags());
+            
+            // Use the refinement layer to clean and standardize the response
+            RefinedNews rn = refinerService.refine(res, raw.getId());
             RefinedNews saved = repo.save(rn);
 
             // try publish to Kafka (best-effort)
